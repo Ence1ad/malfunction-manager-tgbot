@@ -9,6 +9,7 @@ from bot.loader import dp, bot
 
 
 async def get_all():
+    """Get all non_conformance with status 'см функцию get_my_nc' and send xlsx file"""
     group_chat = int(os.getenv("CHAT_ID"))
     all_nc = await get_my_nc()
     if all_nc:
@@ -26,7 +27,6 @@ async def get_all():
             status = nc.status
             non_conformance_list.extend([id_nc, str(formatted_datetime), priority,
                                          str(equipment), description, str(status)])
-            # non_conformance_list = map(str, non_conformance_list)
         level = int(len(non_conformance_list) / 6)
         my_list = []
         x = 0

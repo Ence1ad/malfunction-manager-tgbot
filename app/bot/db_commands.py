@@ -23,13 +23,13 @@ def get_user(user_id):
 
 @sync_to_async
 def select_location():
-    """Выбрать локации"""
+    """Выбрать локацию"""
     return Location.objects.all()
 
 
 @sync_to_async
 def select_non_conformance(pk):
-    """"""
+    """Выбрать несоответствие по ключу"""
     return NonConformance.objects.get(pk=pk)
 
 
@@ -47,7 +47,7 @@ def select_priority(location):
 
 @sync_to_async
 def select_equipments(location, priority, equip_category):
-    """Выбрать категорию локаций поезда"""
+    """Выбрать категорию локаций поезда, с группой критичности и категорией оборудования"""
     return Equipment.objects.filter(equipment_location=location) \
         .filter(priority_group=priority) \
         .filter(equipment_category=equip_category)
@@ -55,11 +55,11 @@ def select_equipments(location, priority, equip_category):
 
 @sync_to_async
 def create_non_conformance(user, location, priority, equipment_id, description, photo_id, video_id):
+    """Записать новое несоответствие в базу данных"""
     creator = User.objects.get(user_id=user)
     equipment = Equipment.objects.get(pk=equipment_id)
     location = Location.objects.get(pk=location)
     status = WorkStatus.objects.get(pk=1)
-    """Выбрать категорию локаций поезда"""
     new_non_conformance = NonConformance(creator=creator,
                                          priority=priority,
                                          nc_description=description,
@@ -75,6 +75,7 @@ def create_non_conformance(user, location, priority, equipment_id, description, 
 
 @sync_to_async
 def get_equipment_title(equipment_id):
+    """Получаем имя оборудования"""
     return Equipment.objects.get(pk=equipment_id)
 
 
@@ -95,6 +96,7 @@ def get_my_nc():
 
 @sync_to_async
 def fetch_media(id: int):
+    """Получаем медиафайл по ID несоответствия"""
     try:
         get_nc = NonConformance.objects.get(pk=id)
         if get_nc.photo:
@@ -108,6 +110,7 @@ def fetch_media(id: int):
 
 @sync_to_async
 def get_tasks(user_id):
+    """Получаем статус задачи с фильтрами по user_id"""
     # status_list = ['создано', 'не назначено', 'не подтверждено', 'остановлен', 'завершен', ]
     # tasks = Task.objects.filter(users__user_id=user_id).exclude(work_status__status_title__in=status_list)
     status = 'назначено'
@@ -127,6 +130,7 @@ def get_nc_4_tasks(pk):
 
 @sync_to_async
 def get_task_status():
+    """Получаем статус с исключением из списка"""
     status_list = ['создано', 'не назначено', 'не подтверждено', 'остановлен', 'назначено']
     return WorkStatus.objects.exclude(status_title__in=status_list)
 
@@ -148,6 +152,7 @@ def write_task_report(task_pk, nc_id, description, work_status, photo_id, video_
 
 @sync_to_async
 def task_count(nc_id):
+    """Подсчитать количество задач"""
     count = Task.objects.filter(nc_id=nc_id).count()
     return NonConformance.objects.filter(pk=nc_id).update(tasks=count)
 
@@ -186,139 +191,13 @@ def user_task_list(task_id):
 
 @sync_to_async
 def get_equipment_area(title):
+    """Получаем расположение оборудования"""
     q = Equipment.objects.get(equipment_title=title)
     return q.area
 
 
 @sync_to_async
 def get_task_status_title(status_id):
+    """Получаем имя статуса"""
     q = WorkStatus.objects.get(pk=status_id)
     return q.status_title
-
-
-
-
-# @sync_to_async
-# def select_wagon(wagon_id):
-#     """Выбрать выгон"""
-#     wagon = Wagon.objects.get(wagon_id=wagon_id)
-#     return wagon
-#
-#
-# @sync_to_async
-# def delete_nc(pk):
-#     """Удалить запись"""
-#     del_nc = nc.objects.filter(work_order=None).get(pk=pk).delete()
-#     return del_nc
-#
-#
-# @sync_to_async
-# def update_nc(pk):
-#     """Удалить запись"""
-#     nc.objects.filter(pk=pk).update(success=True)
-#     Task.objects.filter(nc_id=pk).update(success_task=True)
-#     return
-#
-#
-# @sync_to_async
-# def select_nc(pk):
-#     """выбрать запись"""
-#     sel_nc = nc.objects.filter(pk=pk)
-#     return sel_nc
-#
-#
-# # @sync_to_async
-# # def delete_all_nc():
-# #     """Удалить запись"""
-# #     del_nc = nc.objects.all().delete()
-# #     return del_nc
-#
-# @sync_to_async
-# def get_tasks(user_id):
-#     now = timezone.now()
-#     before = now - timedelta(hours=11)
-#     tasks = Task.objects.filter(users__user_id=user_id).filter(created_at__gte=before)\
-#                         .filter(nc_id__success=False).exclude(nc_id__work_order=None)
-#     get_attr_tasks = []
-#     if tasks:
-#         for i in tasks:
-#             get_attr_tasks.append(i.nc_id)
-#         return get_attr_tasks
-#     else:
-#         return
-#
-#
-# @sync_to_async
-# def tasks_for_download(user_id):
-#     tasks = Task.objects.filter(users__user_id=user_id).filter(nc_id__success=False).exclude(nc_id__work_order=None)
-#     get_attr_tasks = []
-#     if tasks:
-#         for i in tasks:
-#             get_attr_tasks.append(i)
-#         return get_attr_tasks
-#     else:
-#         return
-#
-#
-# @sync_to_async
-# def get_all_tasks(user_id):
-#     now = timezone.now()
-#     before = now - timedelta(hours=11)
-#     tasks = Task.objects.filter(users__user_id=user_id).filter(created_at__gte=before)\
-#                         .filter(nc_id__success=False).exclude(nc_id__work_order=None)
-#     return nc.objects.filter(pk__in=tasks)
-#
-#
-# @sync_to_async
-# def add_all_train():
-#     train_list = ["001", "002", "003", "004", "005", "006", "007", "008", "009", "010", "011", "012", "013", "014",
-#                   "015", "016", "017", "018", "019", "020", "021", "022", "023", "024", "025", "026", "027", "028",
-#                   "029", "030", "031", "032", "033", "034", "035", "036", "037", "038", "039", "040", "041", "042",
-#                   "043", "044", "045", "046", "047", "048", "049", "050", "051", "052", "053", "054"]
-#     x = 1
-#     for i in train_list:
-#         s = Train(train_num=x, train_name=i)
-#         s.save()
-#         x += 1
-#     return
-#
-#
-# @sync_to_async
-# def fetch_media(id: int):
-#     try:
-#         get_nc = nc.objects.get(pk=id)
-#         if get_nc.photo:
-#             media = get_nc.photo
-#         else:
-#             media = get_nc.video
-#         return media
-#     except:
-#         return None
-#
-#
-# @sync_to_async
-# def get_nc_all(user_id):
-#     """Получить только свои несоответствия за последние 11 часов"""
-#     list_nc = nc.objects.filter(user__user_id=user_id)
-#     res = []
-#     if list_nc:
-#         for x in list_nc:
-#             res.append(x)
-#         return res
-#     else:
-#         return
-
-
-# def cutter(list_for_cut=["a", "b", "c", "d", "e", "f"], my_decimal=6, my_col=1, my_row=2):
-#     # "Нарезаем строку по количеству колонок (колонки равны данным)"
-#     wb = Workbook()
-#     ws1 = wb.active
-#     ws1.title = "Лист заданий"
-#     level = int(len(list_for_cut) / my_decimal)
-#     my_list = []
-#     x = 0
-#     while level != 0:
-#         lst = [item for item in list_for_cut[x:(x + my_decimal)]]
-#         my_list.append(lst)
-#         level -= 1
-#         x += my_decimal

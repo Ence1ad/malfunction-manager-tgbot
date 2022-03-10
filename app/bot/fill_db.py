@@ -3,6 +3,7 @@ from tracing.models import Location, EquipmentCategory, WorkStatus, User
 
 
 def fill_db():
+    """Для начальной загрузки бд через shall"""
     admin = User(user_id=1581059021, name="Вадим Литовченко")
     admin.save()
     location = ["Депо", "КМК", "ДОЛБ"]
