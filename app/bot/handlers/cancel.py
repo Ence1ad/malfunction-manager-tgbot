@@ -7,9 +7,6 @@ from aiogram.utils.exceptions import MessageCantBeEdited
 from bot.keyboards.default import start
 from ..loader import dp
 
-
-# @dp.message_handler(commands="cancel", state="*")
-# @dp.message_handler(Text(equals="отмена", ignore_case=True), state="*")
 async def cmd_cancel(message: types.Message, state: FSMContext):
     await state.finish()
     try:

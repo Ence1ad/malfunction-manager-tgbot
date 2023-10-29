@@ -39,11 +39,6 @@ async def choose_keys():
                 callback_data="description",
                 row_width=1
             )],
-            # [InlineKeyboardButton(
-            #     text="назад",
-            #     callback_data="back",
-            #     row_width=1
-            # )],
             [InlineKeyboardButton(
                 text="Отменить",
                 callback_data="cancel",

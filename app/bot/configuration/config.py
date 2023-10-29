@@ -4,16 +4,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BOT_TOKEN = str(os.getenv("BOT_TOKEN"))
-# BASE_URL = 'https://example.com'  # Webhook domain
-# WEBHOOK_PATH = f'/tg/webhooks/bot/{BOT_TOKEN}'
-# WEBHOOK_URL = f'{BASE_URL}{WEBHOOK_PATH}'
-
 SECRET_KEY = os.getenv("SECRET_KEY")
 
-PGUSER = str(os.getenv("PGUSER"))
+POSTGRES_USER = str(os.getenv("POSTGRES_USER"))
 POSTGRES_PASSWORD = str(os.getenv("POSTGRES_PASSWORD"))
-DATABASE = str(os.getenv("DATABASE"))
-DBHOST = str(os.getenv("DBHOST"))
+POSTGRES_DB = str(os.getenv("POSTGRES_DB"))
+SQL_HOST = str(os.getenv("SQL_HOST"))
 PORT = str(os.getenv("PORT"))
 
 admins = [
@@ -22,7 +18,7 @@ admins = [
 
 ip = os.getenv("DJANGO_ALLOWED_HOSTS")
 
-POSTGRES_URL = f"postgres://{PGUSER}:{POSTGRES_PASSWORD}@{DBHOST}:{PORT}/{DATABASE}"
+POSTGRES_URL = f"postgres+psycopg2://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{SQL_HOST}:{PORT}/{POSTGRES_DB}"
 
 chat_id_group = os.getenv("CHAT_ID")
 

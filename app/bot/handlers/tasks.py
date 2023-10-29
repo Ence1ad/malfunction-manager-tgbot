@@ -10,10 +10,9 @@ from ..db_commands import get_nc_4_tasks, write_task_report, task_count, user_ta
     get_equipment_area, get_task_status_title
 from ..keyboards.inline.my_task_keyboard import choose_my_task_keyboard, upd_status_nc, choose_keys, choose_keys_2, \
     status_keys, status_task
-from ..loader import dp, bot
+from ..loader import bot, dp
 
 
-# @dp.message_handler(Command('confirm'))
 async def select_my_task(message: types.Message):
     private_chat = message.chat.id
     group_chat = int(os.getenv("CHAT_ID"))
@@ -199,11 +198,4 @@ def register_handler_get_tasks(dp: Dispatcher):
     dp.register_message_handler(add_photo_video, state=TaskState.media,
                                 content_types=types.ContentTypes.VIDEO | types.ContentTypes.PHOTO)
     dp.register_callback_query_handler(write_report, status_task.filter(), state=TaskState.status)
-    # dp.register_callback_query_handler(back, text_contains="back", state="*")
 
-
-# async def back(call: types.CallbackQuery, state: FSMContext):
-#     await state.reset_state()
-#     user_id = call.message.from_user.id
-#     choose_markup = await choose_my_task_keyboard(user_id)
-#     await call.message.edit_text(text="<b>Список назначенных задач:</b>", reply_markup=choose_markup)

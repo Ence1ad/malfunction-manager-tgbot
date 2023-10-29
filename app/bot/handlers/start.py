@@ -5,10 +5,9 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.builtin import CommandStart
 from ..db_commands import user_create, get_user
 from ..keyboards.default import start
-from ..loader import dp, bot
+from ..loader import bot, dp
 
 
-# @dp.message_handler(CommandStart())
 async def bot_start(message: types.Message, state: FSMContext):
     await state.finish()
     user_id = message.from_user.id

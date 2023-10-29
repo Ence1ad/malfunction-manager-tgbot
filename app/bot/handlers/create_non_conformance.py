@@ -5,13 +5,14 @@ from typing import Union
 from aiogram import types, Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command
+
+from .states import NonConformanceState
+from ..db_commands import create_non_conformance
+from ..keyboards.inline.create_keyboard import save_message_keys, priority_keys, equip_category_keys, location_keys, \
+    equipment_keys, choice, add_nc
 from ..loader import bot, dp
-from ..db_commands import *
-from ..keyboards.inline.create_keyboard import *
-from .states import *
 
 
-# @dp.message_handler(Command('create'))
 async def show_choice(message: types.Message):
     private_chat = message.chat.id
     group_chat = int(os.getenv("CHAT_ID"))
@@ -30,7 +31,6 @@ async def list_location(message: Union[types.Message, types.CallbackQuery], **kw
     elif isinstance(message, types.CallbackQuery):
         call = message
         # тут меняем клавиатуру
-        # await call.message.edit_reply_markup(markup)
         text = "<b>Выберите локацию:</b>"
         await call.message.edit_text(text=text, reply_markup=markup)
 
@@ -50,13 +50,11 @@ async def list_equip_categories(callback: types.CallbackQuery, location, priorit
 
 async def list_equipments(callback: types.CallbackQuery, location, priority, equip_category, **kwargs):
     markup = await equipment_keys(location=location, priority=priority, equip_category=equip_category)
-    # await callback.message.edit_reply_markup(markup)
     text = "<b>Выберите оборудование:</b>"
     await callback.message.edit_text(text=text, reply_markup=markup)
 
 
 # Функция обработчик нажатия на кнопки
-# @dp.callback_query_handler(choice_cd.filter())
 # словарь собран из парметров указанных в my_callback_data_list=CallbackData() (см. в new.key)
 async def navigate(call: types.CallbackQuery, callback_data: dict,):
     current_level = callback_data.get("level")
@@ -73,7 +71,6 @@ async def navigate(call: types.CallbackQuery, callback_data: dict,):
     await current_level_function(call, location=locations, priority=priorities, equip_category=equip_categories)
 
 
-# @dp.callback_query_handler(add_nc.filter())
 async def enter_new_nc(call: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await call.message.edit_text(text="<b>Введите описание несоответствия</b>")
     async with state.proxy() as data:
@@ -86,7 +83,6 @@ async def enter_new_nc(call: types.CallbackQuery, callback_data: dict, state: FS
     await NonConformanceState.nc_state_descriptions.set()
 
 
-# @dp.message_handler(state=NewNonconf.nonconf_descriptions)
 async def enter_description(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data["description"] = message.text
@@ -94,7 +90,6 @@ async def enter_description(message: types.Message, state: FSMContext):
     await NonConformanceState.photo.set()
 
 
-# @dp.message_handler(state=NewNonconf.photo, content_types=types.ContentTypes.VIDEO | types.ContentTypes.PHOTO)
 async def add_photo_video(message: types.Message, state: FSMContext):
     """Для добавления фото и видео необходимо прописать в хендлере content_types"""
     markup = await save_message_keys()
@@ -108,7 +103,6 @@ async def add_photo_video(message: types.Message, state: FSMContext):
     await NonConformanceState.confirm_action.set()
 
 
-# @dp.callback_query_handler(text_contains="save", state=NewNonconf.confirm_action)
 async def save_action(call: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
     user = int(data.get("creator"))
@@ -121,26 +115,25 @@ async def save_action(call: types.CallbackQuery, state: FSMContext):
     new_non_conformance = await create_non_conformance(user, location, priority, equipment_id, description, photo_id,
                                                        video_id)
     if video_id is not None:
-        mess_id = await call.bot.send_video(chat_id=os.getenv("CHAT_ID"), video=video_id, duration=3,
-                                            caption=f"<b>НОВОЕ НЕСООТВЕТСТВИЕ</b>\n"
-                                            f" {'-'*58}\n"
-                                            f"<b>Номер несоответствия:</b>  {new_non_conformance.pk}\n"
-                                            f"<b>Зарегистрировал:</b> {new_non_conformance.creator}\n"
-                                            f"<b>Оборудование:</b>\n{new_non_conformance.equipment}\n"
-                                            f"<b>Расположение:</b>  {new_non_conformance.location}\n"
-                                            f"<b>Описание:</b>\n{new_non_conformance.nc_description}"
-                                            )
+        await call.bot.send_video(chat_id=os.getenv("CHAT_ID"), video=video_id, duration=3,
+                                  caption=f"<b>НОВОЕ НЕСООТВЕТСТВИЕ</b>\n"
+                                  f" {'-'*58}\n"
+                                  f"<b>Номер несоответствия:</b>  {new_non_conformance.pk}\n"
+                                  f"<b>Зарегистрировал:</b> {new_non_conformance.creator}\n"
+                                  f"<b>Оборудование:</b>\n{new_non_conformance.equipment}\n"
+                                  f"<b>Расположение:</b>  {new_non_conformance.location}\n"
+                                  f"<b>Описание:</b>\n{new_non_conformance.nc_description}"
+                                  )
     else:
-        mess_id = await call.bot.send_photo(chat_id=os.getenv("CHAT_ID"), photo=photo_id,
-                                            caption=f"<b>НОВОЕ НЕСООТВЕТСТВИЕ</b>\n"
-                                            f" {'-'*58}\n"
-                                            f"<b>Номер несоответствия:</b> {new_non_conformance.pk}\n"
-                                            f"<b>Зарегистрировал:</b> {new_non_conformance.creator}\n"
-                                            f"<b>Оборудование:</b>\n{new_non_conformance.equipment}\n"
-                                            f"<b>Расположение:</b> {new_non_conformance.location}\n"
-                                            f"<b>Описание:</b>\n{new_non_conformance.nc_description}"
-                                            )
-    # mess_id = mess_id.message_id
+        await call.bot.send_photo(chat_id=os.getenv("CHAT_ID"), photo=photo_id,
+                                  caption=f"<b>НОВОЕ НЕСООТВЕТСТВИЕ</b>\n"
+                                  f" {'-'*58}\n"
+                                  f"<b>Номер несоответствия:</b> {new_non_conformance.pk}\n"
+                                  f"<b>Зарегистрировал:</b> {new_non_conformance.creator}\n"
+                                  f"<b>Оборудование:</b>\n{new_non_conformance.equipment}\n"
+                                  f"<b>Расположение:</b> {new_non_conformance.location}\n"
+                                  f"<b>Описание:</b>\n{new_non_conformance.nc_description}"
+                                  )
 
     await call.answer(text="Вы успешно добавили запись", show_alert=True, cache_time=60)
     await call.message.edit_text(text=f"<b>Вы успешно создали запись: ID - {new_non_conformance.pk}</b>")
@@ -148,7 +141,6 @@ async def save_action(call: types.CallbackQuery, state: FSMContext):
     await state.finish()
 
 
-# @dp.callback_query_handler(text="cancel")
 async def cancel(call: types.CallbackQuery, state: FSMContext):
     await state.finish()
     await call.answer("Вы отменили действие", show_alert=True)

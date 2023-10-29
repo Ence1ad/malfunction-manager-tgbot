@@ -2,6 +2,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.callback_data import CallbackData
 
 from ...db_commands import get_my_nc
+
 del_nc = CallbackData("delete_user_nc", "id_nc")
 
 

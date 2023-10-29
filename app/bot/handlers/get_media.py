@@ -3,14 +3,14 @@ import os
 from aiogram import types, Dispatcher
 from aiogram.dispatcher import filters, FSMContext
 from aiogram.dispatcher.filters import Command
-from ..db_commands import fetch_media
-from ..loader import dp, bot
+
 from .states import Media
 from ..configuration.config import admins
+from ..db_commands import fetch_media
 from ..filters import AdminFilter
+from ..loader import bot, dp
 
 
-# @dp.message_handler(Command('media'))
 async def show_media(message: types.Message):
     private_chat = message.chat.id
     group_chat = int(os.getenv("CHAT_ID"))

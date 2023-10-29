@@ -1,7 +1,13 @@
-from tracing.models import *
+import logging
+
 from asgiref.sync import sync_to_async
 from django.db.models import F
+from tracing.models import *
 
+STATUS_SET = set(['не назначено', 'в процессе', 'требуется диагностика', 'функциональность обеспечена',
+                 'требуется инструмент', 'требуется материал', 'выполнено'])
+TASK_STATUS = 'назначено'
+EXCLUDE_STATUS_SET = set(['создано', 'не назначено', 'не подтверждено', 'остановлен', 'назначено'])
 
 @sync_to_async
 def select_user(user_id: int):
@@ -59,7 +65,7 @@ def create_non_conformance(user, location, priority, equipment_id, description, 
     creator = User.objects.get(user_id=user)
     equipment = Equipment.objects.get(pk=equipment_id)
     location = Location.objects.get(pk=location)
-    status = WorkStatus.objects.get(pk=1)
+    # status = WorkStatus.objects.get(pk=1)
     new_non_conformance = NonConformance(creator=creator,
                                          priority=priority,
                                          nc_description=description,
@@ -67,7 +73,7 @@ def create_non_conformance(user, location, priority, equipment_id, description, 
                                          photo=photo_id,
                                          video=video_id,
                                          location=location,
-                                         status=status,
+                                         # status=status,
                                          )
     new_non_conformance.save()
     return new_non_conformance
@@ -82,16 +88,8 @@ def get_equipment_title(equipment_id):
 @sync_to_async
 def get_my_nc():
     """Получить только несоответствия c указанным статусом"""
-    status_list = ['не назначено', 'в процессе', 'требуется диагностика', 'функциональность обеспечена',
-                   'требуется инструмент', 'требуется материал',]
-    list_nc = NonConformance.objects.filter(status__status_title__in=status_list).order_by('status')
-    res = []
-    if list_nc:
-        for x in list_nc:
-            res.append(x)
-        return res
-    else:
-        return
+    list_nc = NonConformance.objects.filter(status__status_title__in=STATUS_SET).order_by('status')
+    return [nc for nc in list_nc] if list_nc else None
 
 
 @sync_to_async
@@ -104,17 +102,15 @@ def fetch_media(id: int):
         else:
             media = get_nc
         return media
-    except:
+    except Exception as ex:
+        logging.exception(ex)
         return None
 
 
 @sync_to_async
 def get_tasks(user_id):
     """Получаем статус задачи с фильтрами по user_id"""
-    # status_list = ['создано', 'не назначено', 'не подтверждено', 'остановлен', 'завершен', ]
-    # tasks = Task.objects.filter(users__user_id=user_id).exclude(work_status__status_title__in=status_list)
-    status = 'назначено'
-    tasks = Task.objects.filter(users__user_id=user_id).filter(work_status__status_title=status)
+    tasks = Task.objects.filter(users__user_id=user_id).filter(work_status__status_title=TASK_STATUS)
     return tasks
 
 
@@ -122,17 +118,16 @@ def get_tasks(user_id):
 def get_nc_4_tasks(pk):
     """ Получить  несоответствия по Private key"""
     queryset = NonConformance.objects.get(pk=pk)
-    if NonConformance.objects.get(pk=pk):
-        return queryset
-    else:
-        return
+    return queryset or None
+
+
+
 
 
 @sync_to_async
 def get_task_status():
     """Получаем статус с исключением из списка"""
-    status_list = ['создано', 'не назначено', 'не подтверждено', 'остановлен', 'назначено']
-    return WorkStatus.objects.exclude(status_title__in=status_list)
+    return WorkStatus.objects.exclude(status_title__in=EXCLUDE_STATUS_SET)
 
 
 @sync_to_async
@@ -145,7 +140,6 @@ def write_task_report(task_pk, nc_id, description, work_status, photo_id, video_
                                           photo=photo_id,
                                           video=video_id,
                                           )
-    #
     NonConformance.objects.filter(pk=nc_id).update(tasks_processed=F("tasks_processed") + 1)
     return new_report_task
 
@@ -156,28 +150,7 @@ def task_count(nc_id):
     count = Task.objects.filter(nc_id=nc_id).count()
     return NonConformance.objects.filter(pk=nc_id).update(tasks=count)
 
-# @sync_to_async
-# def get_all_nc():
-#     list = nc.objects.all()
-#     return list
-# @sync_to_async
-# def get_nc(hours=11):
-#     """Получить все несоответствия за последние 11 часов"""
-#     now = timezone.now()
-#     before = now - timedelta(hours=hours)
-#     list_nc = nc.objects.filter(created_at__gte=before)
-#     if list_nc:
-#         res = []
-#         for x in list_nc:
-#             res.append(x)
-#         return res
-#     else:
-#         return
-#
-#
 
-
-#
 @sync_to_async
 def user_task_list(task_id):
     """Выбрать """

@@ -3,10 +3,9 @@ import os
 from aiogram import types, Dispatcher
 from aiogram.dispatcher.filters.builtin import CommandHelp
 
-from ..loader import dp, bot
+from ..loader import bot, dp
 
 
-# @dp.message_handler(CommandHelp())
 async def bot_help(message: types.Message):
     private_chat = message.chat.id
     group_chat = int(os.getenv("CHAT_ID"))
