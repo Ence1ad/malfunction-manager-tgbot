@@ -1,14 +1,15 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 
 
-class User(models.Model):
+class User(AbstractUser):
     class Meta:
         verbose_name = "Работник"
         verbose_name_plural = "Работники"
 
-    user_id = models.IntegerField(unique=True, verbose_name="ID пользователя", primary_key=True)
+    user_id = models.BigAutoField(unique=True, verbose_name="ID пользователя", primary_key=True)
     name = models.CharField(max_length=30, verbose_name="Имя пользователя")
-    username = models.CharField(max_length=30, verbose_name="Никнейм пользователя", null=True)
+    username = models.CharField(max_length=30, verbose_name="Никнейм пользователя", null=True, unique=True)
     telephone_number = models.PositiveIntegerField(verbose_name="Номер телефона", null=True, blank=True)
 
     def __str__(self):
@@ -20,7 +21,21 @@ class WorkStatus(models.Model):
         verbose_name = "Статус"
         verbose_name_plural = "Статусы"
 
-    status_title = models.CharField(max_length=30, verbose_name="Статус работы",  unique=True)
+    STATUS_SET = [
+        ('создано', 'создано'),
+        ('назначено', 'назначено'),
+        ('остановлен', 'остановлен'),
+        ('не подтверждено', 'не подтверждено'),
+        ('не назначено', 'не назначено'),
+        ('в процессе', 'в процессе'),
+        ('требуется диагностика', 'требуется диагностика'),
+        ('функциональность обеспечена', 'функциональность обеспечена'),
+        ('требуется инструмент', 'требуется инструмент'),
+        ('требуется материал', 'требуется материал'),
+        ('выполнено', 'выполнено')
+    ]
+
+    status_title = models.CharField(max_length=30, choices=STATUS_SET, verbose_name="Статус работы", unique=True)
 
     def __str__(self):
         return self.status_title
@@ -119,15 +134,13 @@ class NonConformance(models.Model):
     priority = models.CharField(max_length=30, choices=PRIORITY_GROUP, verbose_name="Группа")
     creator = models.ForeignKey(User, models.SET_NULL, blank=True, null=True, verbose_name="Создал")
     equipment = models.ForeignKey(Equipment, models.PROTECT, verbose_name="Оборудование")
-    status = models.ForeignKey(WorkStatus, models.SET_NULL, verbose_name="Статус НС", blank=True, null=True,)
+    status = models.ForeignKey(WorkStatus, models.SET_NULL, verbose_name="Статус НС", blank=True, null=True,
+                               default=1)
     nc_description = models.TextField(max_length=500, verbose_name="Описание НС")
     photo = models.CharField(max_length=200, blank=True, verbose_name="Фото", null=True)
     video = models.CharField(max_length=200, blank=True, verbose_name="Видео", null=True)
     spare_parts = models.ManyToManyField(SpareParts, blank=True, verbose_name="Использовали зап части")
-    # success = models.BooleanField(default=False, verbose_name="Выполнено")
-    # work_description = models.TextField(max_length=500, verbose_name="Что сделано", blank=True, null=True)
     moderator_comments = models.TextField(max_length=1000, verbose_name="Примечание модератора", null=True, blank=True)
-    # mess_id = models.PositiveIntegerField(verbose_name="ID сообщения", null=True, blank=True)
     tasks = models.PositiveSmallIntegerField(verbose_name="Количество назначенных задач", blank=True, null=True)
     tasks_processed = models.PositiveSmallIntegerField(verbose_name="Количество обработанных задач",
                                                        blank=True, null=True)

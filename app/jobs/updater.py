@@ -1,5 +1,4 @@
 import warnings
-from pytz_deprecation_shim import PytzUsageWarning
 from django.conf import settings
 
 from apscheduler.triggers.cron import CronTrigger
@@ -37,7 +36,7 @@ class Command(BaseCommand):
     help = "Runs APScheduler."
 
     def handle(self, *args, **options):
-        warnings.filterwarnings(action="ignore", category=PytzUsageWarning)
+        # warnings.filterwarnings(action="ignore")
         scheduler = AsyncIOScheduler()
         scheduler.add_jobstore(DjangoJobStore(), "default")
 

@@ -3,6 +3,7 @@ import django
 from aiogram.types import BotCommand
 from self import self
 from aiogram import asyncio
+
 from bot.loader import dp, bot
 import logging
 
@@ -22,13 +23,7 @@ async def set_commands():
 
 
 async def main():
-    # Настройка логирования в stdout
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
-    )
-    logger.error("Starting bot")
-
+    # Регистрация хeндлеров
     from bot.handlers import start, create_non_conformance, get_all_nc, get_media, tasks
     start.register_handler_start(dp)
     create_non_conformance.register_handler_write_nc(dp)
@@ -40,7 +35,7 @@ async def main():
     filters.setup(dp)
     # Парсинг файла конфигурации
     #     config = load_config("config/bot.ini")
-    # Регистрация хeндлеров
+
     # Установка команд бота
     await set_commands()
 
@@ -59,11 +54,11 @@ def setup_django():
 
 
 if __name__ == '__main__':
+    # Настройка логирования в stdout
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+    )
     setup_django()
     asyncio.run(main())
-
-
-#     # Объявление и инициализация объектов бота и диспетчера
-#     bot = Bot(token=config.tg_bot.token)
-#     dp = Dispatcher(bot, storage=MemoryStorage())
 
